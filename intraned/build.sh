@@ -15,8 +15,9 @@ mkdir -p uploads
 
 # 2. Compilación del servidor
 # -lws2_32: Librería de sockets de Windows
+# -static: Incluir todas las librerías estáticamente
 echo -e "${YELLOW}Compilando servidor...${NC}"
-g++ -O3 -s server/main.cpp -o build/intraned.exe -I server/include -pthread -lws2_32
+g++ -O3 -s server/main.cpp -o build/intraned.exe -I server/include -pthread -lws2_32 -static-libgcc -static-libstdc++
 
 # 4. Verificar si la compilación fue exitosa
 if [ $? -eq 0 ]; then
