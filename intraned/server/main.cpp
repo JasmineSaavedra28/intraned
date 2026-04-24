@@ -1,16 +1,16 @@
 /**
  * @file main.cpp
  * @author Gabriel Nicolás González Ferreira
- * @brief Servidor principal - Versión de alta compatibilidad (POSIX)
- * @version 0.3
+ * @brief Servidor principal - Intraned
+ * @version 0.4
  */
- 
+
 #include "include/httplib.h"
 #include "include/json.hpp"
 #include "utils/fileHelper.cpp"
 #include <iostream>
 #include <fstream>
-#include <sys/stat.h> // Para mkdir y stat (POSIX)
+#include <sys/stat.h>
 #include <sys/types.h>
 
 using json = nlohmann::json;
@@ -115,7 +115,8 @@ int main()
         }
     });
 
-    std::cout << "Servidor iniciado en http://localhost:8080 (Modo compatibilidad POSIX)" << std::endl;
+    std::cout << "Servidor iniciado en http://localhost:8080" << std::endl;
     svr.listen("0.0.0.0", 8080);
+    
     return 0;
 }
