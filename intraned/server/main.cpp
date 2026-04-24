@@ -38,7 +38,7 @@ int main()
 
     httplib::Server svr;
 
-    svr.set_mount_point("/", "./public");
+    svr.set_mount_point("/", "../public");
     svr.set_mount_point("/recursos", upload_dir);
 
     // Ruta de Login
