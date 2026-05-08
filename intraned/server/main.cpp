@@ -6,7 +6,7 @@
  */
 
 #include "include/dynamic_httplib.h"
-#include "include/json.hpp"
+#include "include/dynamic_json.h"
 #include "include/dynamic_loader.h"
 #include "utils/fileHelper.cpp"
 #include <iostream>
@@ -38,8 +38,14 @@ int main()
     asegurar_directorio(upload_dir);
 
     HttplibLoader httplibLoader;
-    if (!httplibLoader.loadFunctions()) {
-        std::cerr << "Error loading httplib functions" << std::endl;
+    if (!httplibLoader.load() || !httplibLoader.loadFunctions()) {
+        std::cerr << "Error loading httplib.dll" << std::endl;
+        return 1;
+    }
+
+    JsonLoader jsonLoader;
+    if (!jsonLoader.load() || !jsonLoader.loadFunctions()) {
+        std::cerr << "Error loading json.dll" << std::endl;
         return 1;
     }
 
@@ -49,15 +55,22 @@ int main()
     svr->set_mount_point("/recursos", upload_dir);
 
     // Ruta de Login
-    svr->Post("/api/login", [](const httplib::Request &req, httplib::Response &res) {
+    svr->Post("/api/login", [&jsonLoader](const httplib::Request &req, httplib::Response &res) {
         try {
-            auto j_input = json::parse(req.body);
-            if (j_input["password"] == "admin123") {
+            void* j_input = jsonLoader.parseJson(req.body.c_str());
+            if (!j_input) {
+                res.status = 400;
+                res.set_content("{\"error\": \"JSON invalido\"}", "application/json");
+                return;
+            }
+            json* j = static_cast<json*>(j_input);
+            if ((*j)["password"] == "admin123") {
                 res.set_content("{\"token\": \"" + ADMIN_TOKEN + "\"}", "application/json");
             } else {
                 res.status = 401;
                 res.set_content("{\"error\": \"No autorizado\"}", "application/json");
             }
+            jsonLoader.destroyJson(j_input);
         } catch (...) {
             res.status = 400;
             res.set_content("{\"error\": \"JSON invalido\"}", "application/json");
@@ -65,19 +78,21 @@ int main()
     });
 
     // Obtener contenidos
-    svr->Get("/api/contenidos", [&](const httplib::Request &, httplib::Response &res) {
+    svr->Get("/api/contenidos", [&jsonLoader, &upload_dir](const httplib::Request &, httplib::Response &res) {
         std::ifstream file(upload_dir + "/metadata.json");
         if (file.is_open()) {
-            json db;
-            file >> db;
-            res.set_content(db.dump(), "application/json");
+            void* db = jsonLoader.createJson();
+            json* j_db = static_cast<json*>(db);
+            file >> *j_db;
+            res.set_content(jsonLoader.jsonToString(db), "application/json");
+            jsonLoader.destroyJson(db);
         } else {
             res.set_content("{\"contenidos\": []}", "application/json");
         }
     });
 
     // Ruta de Upload (Usando req.form para httplib 0.38.0)
-    svr->Post("/api/upload", [&upload_dir](const httplib::Request &req, httplib::Response &res) {
+    svr->Post("/api/upload", [&jsonLoader, &upload_dir](const httplib::Request &req, httplib::Response &res) {
         if (req.get_header_value("Authorization") != ADMIN_TOKEN) {
             res.status = 403;
             res.set_content("{\"error\": \"Token invalido\"}", "application/json");
@@ -103,19 +118,20 @@ int main()
             ofs << file_part.content;
             ofs.close();
 
-            json nuevo = {
-                {"titulo", titulo},
-                {"autor", autor},
-                {"tema", tema},
-                {"file", filename}
-            };
+            void* nuevo = jsonLoader.createJson();
+            json* j_nuevo = static_cast<json*>(nuevo);
+            (*j_nuevo)["titulo"] = titulo;
+            (*j_nuevo)["autor"] = autor;
+            (*j_nuevo)["tema"] = tema;
+            (*j_nuevo)["file"] = filename;
             
-            if (FileHelper::registrarArchivo(nuevo)) {
+            if (FileHelper::registrarArchivo(*j_nuevo)) {
                 res.set_content("{\"status\": \"success\"}", "application/json");
             } else {
                 res.status = 500;
                 res.set_content("{\"error\": \"Error en metadata\"}", "application/json");
             }
+            jsonLoader.destroyJson(nuevo);
         } else {
             res.status = 500;
             res.set_content("{\"error\": \"Error de E/S en disco\"}", "application/json");

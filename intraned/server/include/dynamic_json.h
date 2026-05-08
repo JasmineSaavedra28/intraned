@@ -33,7 +33,7 @@ typedef json json_t;
 // Funciones de fábrica
 extern "C" DLL_API void* CreateJson();
 extern "C" DLL_API void DestroyJson(void* j);
-extern "C" DLL_API const char* JsonToString(const json& j);
+extern "C" DLL_API const char* JsonToString(void* j);
 extern "C" DLL_API void* ParseJson(const char* str);
 
 } // namespace nlohmann

@@ -15,20 +15,21 @@ namespace nlohmann {
 // crear una interfaz de carga dinámica
 
 // Instancias de json factory
-json* CreateJson() {
+extern "C" DLL_API void* CreateJson() {
     return new json();
 }
 
-void DestroyJson(json* j) {
-    delete j;
+extern "C" DLL_API void DestroyJson(void* j) {
+    delete static_cast<json*>(j);
 }
 
 // Serialización
-std::string JsonToString(const json& j) {
-    return j.dump();
+extern "C" DLL_API const char* JsonToString(void* j) {
+    static std::string s = static_cast<json*>(j)->dump();
+    return s.c_str();
 }
 
-json* ParseJson(const std::string& str) {
+extern "C" DLL_API void* ParseJson(const char* str) {
     try {
         return new json(json::parse(str));
     } catch (...) {

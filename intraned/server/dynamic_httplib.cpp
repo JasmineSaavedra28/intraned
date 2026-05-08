@@ -24,11 +24,11 @@ public:
 };
 
 // Funciones de fábrica para crear instancias
-extern "C" void* CreateServer() {
+extern "C" DLL_API void* CreateServer() {
     return new ServerDLL();
 }
 
-extern "C" void DestroyServer(void* srv) {
+extern "C" DLL_API void DestroyServer(void* srv) {
     delete static_cast<ServerDLL*>(srv);
 }
 

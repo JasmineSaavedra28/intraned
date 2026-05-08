@@ -122,12 +122,20 @@ inline void* DynamicLoader::getFunction(const std::string& funcName) {
 }
 
 inline HttplibLoader::HttplibLoader() 
-    : DynamicLoader(""),
+    : DynamicLoader(
+#ifdef _WIN32
+        "build/httplib.dll"
+#else
+        "build/libhttplib.so"
+#endif
+      ),
       createServer(nullptr), destroyServer(nullptr) {}
 
 inline bool HttplibLoader::loadFunctions() {
-    createServer = CreateServer;
-    destroyServer = DestroyServer;
+    if (!load()) return false;
+    
+    createServer = (ServerFactory)getFunction("CreateServer");
+    destroyServer = (ServerDestroyer)getFunction("DestroyServer");
     
     return createServer && destroyServer;
 }
@@ -135,9 +143,9 @@ inline bool HttplibLoader::loadFunctions() {
 inline JsonLoader::JsonLoader()
     : DynamicLoader(
 #ifdef _WIN32
-        "json.dll"
+        "build/json.dll"
 #else
-        "libjson.so"
+        "build/libjson.so"
 #endif
       ),
       createJson(nullptr), destroyJson(nullptr), 

@@ -13,11 +13,18 @@ echo -e "${BLUE}Iniciando compilación de Intraned...${NC}"
 mkdir -p build
 mkdir -p uploads
 
-# 2. Compilación del servidor
+# 2. Compilación de bibliotecas dinámicas
+echo -e "${YELLOW}Compilando httplib.dll...${NC}"
+g++ -shared -o build/httplib.dll server/dynamic_httplib.cpp -I server/include -pthread -lws2_32 -static-libgcc -static-libstdc++
+
+echo -e "${YELLOW}Compilando json.dll...${NC}"
+g++ -shared -o build/json.dll server/dynamic_json.cpp -I server/include -static-libgcc -static-libstdc++
+
+# 3. Compilación del servidor
 # -lws2_32: Librería de sockets de Windows
 # -static: Incluir todas las librerías estáticamente
 echo -e "${YELLOW}Compilando servidor...${NC}"
-g++ server/main.cpp server/dynamic_httplib.cpp -o build/intraned.exe -I server/include -pthread -lws2_32 -static-libgcc -static-libstdc++
+g++ -O3 -s server/main.cpp -o build/intraned.exe -I server/include -pthread -lws2_32 -static-libgcc -static-libstdc++
 
 # 4. Verificar si la compilación fue exitosa
 if [ $? -eq 0 ]; then

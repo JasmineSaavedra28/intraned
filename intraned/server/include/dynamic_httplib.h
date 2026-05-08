@@ -68,7 +68,7 @@ private:
 };
 
 // Funciones de fábrica
-extern "C" void* CreateServer();
-extern "C" void DestroyServer(void*);
+extern "C" DLL_API void* CreateServer();
+extern "C" DLL_API void DestroyServer(void*);
 
 } // namespace httplib
