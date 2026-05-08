@@ -5,8 +5,9 @@
  * @version 0.4
  */
 
-#include "include/httplib.h"
+#include "include/dynamic_httplib.h"
 #include "include/json.hpp"
+#include "include/dynamic_loader.h"
 #include "utils/fileHelper.cpp"
 #include <iostream>
 #include <fstream>
@@ -36,13 +37,19 @@ int main()
     const std::string upload_dir = "./server/uploads";
     asegurar_directorio(upload_dir);
 
-    httplib::Server svr;
+    HttplibLoader httplibLoader;
+    if (!httplibLoader.loadFunctions()) {
+        std::cerr << "Error loading httplib functions" << std::endl;
+        return 1;
+    }
 
-    svr.set_mount_point("/", "./public");
-    svr.set_mount_point("/recursos", upload_dir);
+    httplib::Server* svr = (httplib::Server*)httplibLoader.createServer();
+
+    svr->set_mount_point("/", "./public");
+    svr->set_mount_point("/recursos", upload_dir);
 
     // Ruta de Login
-    svr.Post("/api/login", [](const httplib::Request &req, httplib::Response &res) {
+    svr->Post("/api/login", [](const httplib::Request &req, httplib::Response &res) {
         try {
             auto j_input = json::parse(req.body);
             if (j_input["password"] == "admin123") {
@@ -58,7 +65,7 @@ int main()
     });
 
     // Obtener contenidos
-    svr.Get("/api/contenidos", [&](const httplib::Request &, httplib::Response &res) {
+    svr->Get("/api/contenidos", [&](const httplib::Request &, httplib::Response &res) {
         std::ifstream file(upload_dir + "/metadata.json");
         if (file.is_open()) {
             json db;
@@ -70,7 +77,7 @@ int main()
     });
 
     // Ruta de Upload (Usando req.form para httplib 0.38.0)
-    svr.Post("/api/upload", [&upload_dir](const httplib::Request &req, httplib::Response &res) {
+    svr->Post("/api/upload", [&upload_dir](const httplib::Request &req, httplib::Response &res) {
         if (req.get_header_value("Authorization") != ADMIN_TOKEN) {
             res.status = 403;
             res.set_content("{\"error\": \"Token invalido\"}", "application/json");
@@ -116,7 +123,8 @@ int main()
     });
 
     std::cout << "Servidor iniciado en http://localhost:8080" << std::endl;
-    svr.listen("0.0.0.0", 8080);
+    svr->listen("0.0.0.0", 8080);
     
+    httplibLoader.destroyServer(svr);
     return 0;
 }

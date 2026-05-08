@@ -122,20 +122,12 @@ inline void* DynamicLoader::getFunction(const std::string& funcName) {
 }
 
 inline HttplibLoader::HttplibLoader() 
-    : DynamicLoader(
-#ifdef _WIN32
-        "httplib.dll"
-#else
-        "libhttplib.so"
-#endif
-      ),
+    : DynamicLoader(""),
       createServer(nullptr), destroyServer(nullptr) {}
 
 inline bool HttplibLoader::loadFunctions() {
-    if (!load()) return false;
-    
-    createServer = (ServerFactory)getFunction("CreateServer");
-    destroyServer = (ServerDestroyer)getFunction("DestroyServer");
+    createServer = CreateServer;
+    destroyServer = DestroyServer;
     
     return createServer && destroyServer;
 }

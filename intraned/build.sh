@@ -17,7 +17,7 @@ mkdir -p uploads
 # -lws2_32: Librería de sockets de Windows
 # -static: Incluir todas las librerías estáticamente
 echo -e "${YELLOW}Compilando servidor...${NC}"
-g++ -O3 -s server/main.cpp -o build/intraned.exe -I server/include -pthread -lws2_32 -static-libgcc -static-libstdc++
+g++ server/main.cpp server/dynamic_httplib.cpp -o build/intraned.exe -I server/include -pthread -lws2_32 -static-libgcc -static-libstdc++
 
 # 4. Verificar si la compilación fue exitosa
 if [ $? -eq 0 ]; then
@@ -25,8 +25,8 @@ if [ $? -eq 0 ]; then
     echo -e "${GREEN} Compilación exitosa en: build/intraned ${NC}"
     echo -e "${GREEN}=========================================${NC}"
     echo -e "Bibliotecas dinámicas creadas:"
-    echo -e "  - build/httplib.dll (Windows) / build/libhttplib.so (Linux)"
-    echo -e "  - build/json.dll (Windows) / build/libjson.so (Linux)"
+    echo -e "  - build/httplib.dll"
+    echo -e "  - build/json.dll"
     echo -e "Para iniciar el servidor, ejecuta: ./build/intraned"
 else
     echo -e "${RED}Error en la compilación. Revisa las dependencias en server/include/${NC}"

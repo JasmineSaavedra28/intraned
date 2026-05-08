@@ -24,12 +24,12 @@ public:
 };
 
 // Funciones de fábrica para crear instancias
-Server* CreateServer() {
-    return new Server();
+extern "C" void* CreateServer() {
+    return new ServerDLL();
 }
 
-void DestroyServer(Server* srv) {
-    delete srv;
+extern "C" void DestroyServer(void* srv) {
+    delete static_cast<ServerDLL*>(srv);
 }
 
 } // namespace httplib
