@@ -118,7 +118,7 @@ inline bool DynamicLoader::isLoaded() const {
 
 inline void* DynamicLoader::getFunction(const std::string& funcName) {
     if (!loaded || !handle) return nullptr;
-    return GET_PROC_ADDRESS(handle, funcName.c_str());
+    return (void*)GET_PROC_ADDRESS(handle, funcName.c_str());
 }
 
 inline HttplibLoader::HttplibLoader() 

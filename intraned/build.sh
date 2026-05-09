@@ -17,9 +17,6 @@ mkdir -p uploads
 echo -e "${YELLOW}Compilando httplib.dll...${NC}"
 g++ -shared -o build/httplib.dll server/dynamic_httplib.cpp -I server/include -pthread -lws2_32 -static-libgcc -static-libstdc++
 
-echo -e "${YELLOW}Compilando json.dll...${NC}"
-g++ -shared -o build/json.dll server/dynamic_json.cpp -I server/include -static-libgcc -static-libstdc++
-
 # 3. Compilación del servidor
 # -lws2_32: Librería de sockets de Windows
 # -static: Incluir todas las librerías estáticamente
@@ -33,7 +30,6 @@ if [ $? -eq 0 ]; then
     echo -e "${GREEN}=========================================${NC}"
     echo -e "Bibliotecas dinámicas creadas:"
     echo -e "  - build/httplib.dll"
-    echo -e "  - build/json.dll"
     echo -e "Para iniciar el servidor, ejecuta: ./build/intraned"
 else
     echo -e "${RED}Error en la compilación. Revisa las dependencias en server/include/${NC}"

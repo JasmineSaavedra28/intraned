@@ -22,6 +22,11 @@
     #define DLL_API __attribute__((visibility("default")))
 #endif
 
+struct FilePart {
+    std::string filename;
+    std::string content;
+};
+
 // Forward declarations de las clases de httplib
 namespace httplib {
     
@@ -34,8 +39,13 @@ struct Request {
     std::map<std::string, std::string> params;
     struct {
         std::multimap<std::string, std::string> files;
+        std::map<std::string, std::string> fields;
         bool has_file(const std::string& name) const;
-        std::string get_file(const std::string& name) const;
+        FilePart get_file(const std::string& name) const;
+        std::string get_field(const std::string& name) const {
+            auto it = fields.find(name);
+            return it != fields.end() ? it->second : "";
+        }
     } form;
     
     std::string get_header_value(const std::string& name) const;
